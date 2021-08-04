@@ -12,7 +12,7 @@ Utility tools for ShareLoc.XYZ in Python
 pip install -U shareloc-utils
 ```
 
-## Usage for Batch Download
+## Usage for batch downloading
 
 You can pass datasets url directly to the command line like this:
 
