@@ -1,25 +1,25 @@
-"""Set up the NEW_PACKAGE package."""
+"""Set up the shareloc_utils package."""
 import json
 from pathlib import Path
 
 from setuptools import find_packages, setup
 
-DESCRIPTION = "Describe the NEW_PACKAGE."
+DESCRIPTION = "Utility tools for ShareLoc.XYZ"
 
 ROOT_DIR = Path(__file__).parent.resolve()
 README_FILE = ROOT_DIR / "README.md"
 LONG_DESCRIPTION = README_FILE.read_text(encoding="utf-8")
-VERSION_FILE = ROOT_DIR / "NEW_PACKAGE" / "VERSION"
+VERSION_FILE = ROOT_DIR / "shareloc_utils" / "VERSION"
 VERSION = json.loads(VERSION_FILE.read_text())["version"]
 
 REQUIRES = []
 
 setup(
-    name="NEW_PACKAGE",
+    name="shareloc-utils",
     version=VERSION,
-    url="https://github.com/imjoy-team/NEW_PACKAGE",
-    author="ImJoy-Team",
-    author_email="imjoy.team@gmail.com",
+    url="https://github.com/imodpasteur/shareloc_utils",
+    author="imod-pasteur",
+    author_email="shareloc@pasteur.fr",
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,

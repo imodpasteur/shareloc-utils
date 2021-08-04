@@ -1,6 +1,6 @@
 include LICENSE
 include README.md
-include NEW_PACKAGE/VERSION
+include shareloc_utils/VERSION
 exclude requirements*.txt
 exclude .*
 exclude pylintrc
