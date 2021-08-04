@@ -28,7 +28,7 @@ def test_download():
         delimiter=",",
         extension=".txt",
     )
-    assert os.path.exists("./output/eiffel_tower-df/_covers/screenshot-2_thumbnail.png")
-    assert os.path.exists("./output/eiffel_tower-df/eiffel_tower-df/data.txt")
-    assert os.path.exists("./output/eiffel_tower-df/README.md")
+    assert os.path.exists(f"{dirpath}/eiffel_tower-df/_covers/screenshot-2_thumbnail.png")
+    assert os.path.exists(f"{dirpath}/eiffel_tower-df/eiffel_tower-df/data.txt")
+    assert os.path.exists(f"{dirpath}/eiffel_tower-df/README.md")
     shutil.rmtree(dirpath)
