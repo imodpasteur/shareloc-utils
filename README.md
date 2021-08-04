@@ -30,13 +30,24 @@ python -m shareloc_utils.batch_download --help
 
 ## Use the SMLM file parser
 
-You can use the *.smlm file parser in Python:
+In Python, you use the `read_smlm_file` function to parse the *.smlm file downloaded from ShareLoc(https://shareloc.xyz).
 
+In the following example, we first parse the tables in the smlm file, then generate a histogram image:
 ```python
-from shareloc_utils.smlm_file import read_smlm_file
+from PIL import Image
+from shareloc_utils.smlm_file import read_smlm_file, plot_histogram
 
+# parse the .smlm file
 manifest = read_smlm_file("./localization_table.smlm")
+# one file can contain multiple localization tables
+tables = manifest["files"]
 
+# generate an histogram image for the first table
+histogram = plot_histogram(tables[0]["data"], value_range=(0, 255))
+
+# save the histogram image as 16-bit png file
+im = Image.fromarray(histogram.astype("uint16"))
+im.save("output.png")
 ```
 
 ## Development
