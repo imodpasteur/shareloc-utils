@@ -59,14 +59,14 @@ def download(
     delimiter=",",
     extension=".csv",
 ):
-    print("Files will be saved to " + output_dir)
-    for dataset_url in datasets:
+    print(f"Files will be saved to: {output_dir}")
+    for index, dataset_url in enumerate(datasets):
         if not dataset_url.startswith("http"):
             if sandbox:
                 dataset_url = "https://sandbox.zenodo.org/record/" + dataset_url
             else:
                 dataset_url = "https://zenodo.org/record/" + dataset_url
-        print("Downloading dataset " + dataset_url + "...")
+        print(f"======> Downloading dataset {index+1}/{len(datasets)}: {dataset_url}")
         rdf_url = dataset_url + "/files/rdf.yaml"
         data = urllib.request.urlopen(rdf_url)
         rdf = yaml.load(
