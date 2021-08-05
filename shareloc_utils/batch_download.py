@@ -53,7 +53,7 @@ def download(
     datasets,
     output_dir,
     file_patterns=["*.smlm"],
-    include=["covers", "documentation", "files"],
+    include=["covers", "documentation", "files", "views"],
     conversion=False,
     sandbox=False,
     delimiter=",",
@@ -94,13 +94,27 @@ def download(
             )
         if (
             "files" in include
+            or "views" in include
             and rdf.get("attachments")
             and rdf["attachments"].get("samples")
         ):
             attachments = rdf["attachments"]
             for sample in attachments["samples"]:
                 os.makedirs(os.path.join(dataset_dir, sample["name"]), exist_ok=True)
-                for file in sample["files"]:
+                if "views" in include:
+                    for view in sample.get("views", []):
+                        name = view.get("image_name")
+                        file_path = os.path.join(dataset_dir, sample["name"], name)
+                        if name:
+                            # download the file
+                            download_url(
+                                resolve_url(rdf_url, sample["name"] + "/" + name),
+                                file_path,
+                            )
+
+                if "files" not in include:
+                    continue
+                for file in sample.get("files", []):
                     file_path = os.path.join(dataset_dir, sample["name"], file["name"])
                     if any(
                         map(
@@ -138,8 +152,8 @@ def main():
     parser.add_argument("--output_dir", default=None, help="output directory path")
     parser.add_argument(
         "--include",
-        default="covers,documentation,files",
-        help="enable conversion to text file (e.g. csv)",
+        default="covers,documentation,files,views",
+        help="The type of files to be downloaded, separated by comma. The default value is: covers,documentation,files,views",
     )
     parser.add_argument("--file_patterns", default="*.smlm,*.csv", help="file pattern")
     parser.add_argument(
