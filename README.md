@@ -14,19 +14,35 @@ pip install -U shareloc-utils
 
 ## Usage for batch downloading
 
-You can pass datasets url directly to the command line like this:
+The easiest way to download the dataset is to go to https://shareloc.xyz and click the download icon on the dataset.
 
+You will then get a generated command which you can use for downloading the dataset.
+
+If you want to know how the generated commands works, here we will give a few examples.
+
+Basically, you can pass datasets url directly to the command line like this:
 ```
-python -m shareloc_utils.batch_download --datasets=https://sandbox.zenodo.org/record/891810 --output_dir=./output --conversion
+python -m shareloc_utils.batch_download --datasets=https://sandbox.zenodo.org/record/891810 --output_dir=./output
 ```
 
-If you want to downlaod multiple datasets, use comma to separate multiple dataset URL.
+If you want to download multiple datasets, use comma to separate multiple dataset URL or just Zenodo IDs.
+```
+python -m shareloc_utils.batch_download --datasets=891810,887832 --sandbox --output_dir=./output
+```
+Note that when you use Zenodo ID, you will need an additional parameter `--sandbox` if you are using the sandbox server. 
 
-To print all other options type: 
+If you want to convert the downloaded dataset to text file format (e.g. CSV), you can add ` --conversion` after the command.
+
+To print all other options, type: 
 ```
 python -m shareloc_utils.batch_download --help
 ```
 
+### Downloading multiple datasets
+
+The ShareLoc.XYZ website support bookmark feature (similar to a shopping cart) which you can mark multiple datasets and download them all.
+
+To use it, you move your mouse on top of the dataset card you are interested in, then click the bookmark icon to mark it. Repeat the process and mark all the datasets you want to download. Then click the bookmark icon in the navigation bar and click "Download All".
 
 ## Use the SMLM file parser
 

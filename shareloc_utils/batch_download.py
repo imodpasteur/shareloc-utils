@@ -55,11 +55,17 @@ def download(
     file_patterns=["*.smlm"],
     include=["covers", "documentation", "files"],
     conversion=False,
+    sandbox=False,
     delimiter=",",
     extension=".csv",
 ):
     print("Files will be saved to " + output_dir)
     for dataset_url in datasets:
+        if not dataset_url.startswith("http"):
+            if sandbox:
+                dataset_url = "https://sandbox.zenodo.org/record/" + dataset_url
+            else:
+                dataset_url = "https://zenodo.org/record/" + dataset_url
         print("Downloading dataset " + dataset_url + "...")
         rdf_url = dataset_url + "/files/rdf.yaml"
         data = urllib.request.urlopen(rdf_url)
@@ -125,17 +131,22 @@ def main():
 
     parser = argparse.ArgumentParser(description="Batch downloading for ShareLoc.XYZ")
     parser.add_argument(
-        "--datasets", default=[], help="Dataset URL list, separated by comma"
+        "--datasets",
+        default=[],
+        help="A list of dataset URL or Zenodo ID, separated by comma",
     )
-    parser.add_argument(
-        "--output_dir", default=None, help="output directory path"
-    )
+    parser.add_argument("--output_dir", default=None, help="output directory path")
     parser.add_argument(
         "--include",
         default="covers,documentation,files",
         help="enable conversion to text file (e.g. csv)",
     )
     parser.add_argument("--file_patterns", default="*.smlm,*.csv", help="file pattern")
+    parser.add_argument(
+        "--sandbox",
+        action="store_true",
+        help="Use the sandbox site, used only when Zenodo IDs are provided for the datasets",
+    )
     parser.add_argument(
         "--conversion",
         action="store_true",
@@ -155,6 +166,7 @@ def main():
         args.output_dir or tempfile.mkdtemp(),
         file_patterns=list(map(str.strip, args.file_patterns.split(","))),
         include=list(map(str.strip, args.include.split(","))),
+        sandbox=args.sandbox,
         conversion=args.conversion,
         delimiter=args.delimiter,
         extension=args.extension,

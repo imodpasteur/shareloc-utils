@@ -82,10 +82,7 @@ def read_smlm_file(file_path):
                                 unpacked_data = unpack(table_file[i : i + rowLen])
                                 for j, h in enumerate(headers):
                                     data[h].append(unpacked_data[j])
-                            data = {
-                                h: np.array(data[h])
-                                for i, h in enumerate(headers)
-                            }
+                            data = {h: np.array(data[h]) for i, h in enumerate(headers)}
                         file_info["min"] = [data[h].min() for h in headers]
                         file_info["max"] = [data[h].max() for h in headers]
                         file_info["avg"] = [data[h].mean() for h in headers]
