@@ -58,7 +58,7 @@ manifest = read_smlm_file("./localization_table.smlm")
 # one file can contain multiple localization tables
 tables = manifest["files"]
 
-# generate an histogram image for the first table
+# generate a histogram image for the first table
 histogram = plot_histogram(tables[0]["data"], value_range=(0, 255))
 
 # save the histogram image as 16-bit png file
