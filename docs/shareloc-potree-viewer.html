@@ -69,7 +69,8 @@
 			material.opacity = 0.3;
 			// material.blending = THREE.AdditiveBlending;
 			// material.depthFunc = THREE.LessEqualDepth;
-			material.activeAttributeName = "color";
+			material.pointColorType = Potree.PointColorType.COLOR;
+			// material.activeAttributeName = "color";
 			material.color = new THREE.Color(dataColor);
 			// material.activeAttributeName = "classification";
 			viewer.fitToScreen();
