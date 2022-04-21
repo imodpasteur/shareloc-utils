@@ -29,6 +29,7 @@
 	<script src="./libs/jstree/jstree.js"></script>
 	<script src="./libs/potree/potree.js"></script>
 	<script src="./libs/plasio/js/laslaz.js"></script>
+	<script src="https://gildas-lormeau.github.io/zip.js/demos/lib/zip.min.js"></script>
 	
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 		<div id="potree_render_area" style="background-image: url('./libs/potree/resources/images/background.jpg');">
@@ -57,7 +58,7 @@
 			$("#menu_filters").next().show();
 			viewer.toggleSidebar();
 		});
-		
+
 		Potree.loadPointCloud(dataUrl, dataName, function(e){
 			let pointcloud = e.pointcloud;
 			let material = pointcloud.material;
