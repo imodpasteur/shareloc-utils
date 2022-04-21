@@ -12,6 +12,12 @@ Utility tools for ShareLoc.XYZ in Python
 pip install -U shareloc-utils
 ```
 
+If you want to use the shareloc potree viewer:
+
+```
+pip install -U shareloc-utils[potree]
+```
+
 ## Usage for batch downloading
 
 The easiest way to download the dataset is to go to https://shareloc.xyz and click the download icon on the dataset.
@@ -31,7 +37,7 @@ python -m shareloc_utils.batch_download --datasets=891810,887832 --sandbox --out
 ```
 Note that when you use Zenodo ID, you will need an additional parameter `--sandbox` if you are using the sandbox server. 
 
-If you want to convert the downloaded dataset to text file format (e.g. CSV), you can add ` --conversion` after the command.
+If you want to convert the downloaded dataset to text file format (e.g. CSV), you can add ` --conversion` after the command. If you want to generate a potree octree for visualization, set `--extension=".potree"` (a potree folder) or `--extension=".potree.zip"` (a zipped potree file). 
 
 To print all other options, type: 
 ```

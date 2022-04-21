@@ -8,6 +8,7 @@ import fnmatch
 import urllib.request
 from urllib.parse import urljoin
 import tempfile
+import shutil
 
 from tqdm import tqdm
 from shareloc_utils.smlm_file import read_smlm_file
@@ -47,6 +48,43 @@ def convert_smlm(file_path, delimiter=",", extension=".csv"):
                         f"{table[headers[j]][i]:.3f}"
                         + (delimiter if j < cols - 1 else "\n")
                     )
+
+
+def convert_potree(file_path, zip):
+    import pypotree
+    import numpy as np
+
+    manifest = read_smlm_file(file_path)
+    tables = manifest["files"]
+    table = tables[0]["data"]
+    xyz = np.stack([table["x"], table["y"], np.zeros_like(table["y"])], axis=1)
+    # dump data and convert
+    np.savetxt(".tmp.txt", xyz)
+    BIN = os.path.dirname(pypotree.__file__) + "/bin"
+
+    name = os.path.basename(file_path.replace(".smlm", ""))
+    output_dir = os.path.join(os.path.dirname(file_path), "potree")
+    try:
+        print(
+            "{BIN}/PotreeConverter .tmp.txt -f xyz -o {output_dir} -p {idd} --material ELEVATION --overwrite".format(
+                BIN=BIN, output_dir=output_dir, idd=name
+            )
+        )
+        os.system(
+            '{BIN}/PotreeConverter .tmp.txt -f xyz -o "{output_dir}" -p "{idd}" --material ELEVATION --overwrite'.format(
+                BIN=BIN, output_dir=output_dir, idd=name
+            )
+        )
+        if zip:
+            zip_name = file_path.replace(".smlm", ".potree")
+            shutil.make_archive(
+                zip_name, "zip", os.path.join(output_dir, "pointclouds", name)
+            )
+            shutil.rmtree(output_dir)
+    except Exception:
+        raise
+    finally:
+        os.remove(".tmp.txt")
 
 
 def download(
@@ -130,7 +168,13 @@ def download(
                         # optionally, convert .smlm file to text file
                         if file_path.endswith(".smlm") and conversion:
                             print("Converting " + file_path + "...")
-                            convert_smlm(file_path, delimiter, extension)
+                            if extension == ".potree.zip":
+                                convert_potree(file_path, True)
+                            elif extension == ".potree":
+                                convert_potree(file_path, False)
+                            else:
+                                convert_smlm(file_path, delimiter, extension)
+
         print("Done ")
 
 

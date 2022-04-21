@@ -29,6 +29,7 @@ setup(
     long_description_content_type="text/markdown",
     python_requires=">=3.6",
     install_requires=REQUIRES,
+    extras_require={"potree": ["pypotree"]},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Web Environment",
