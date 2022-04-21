@@ -46,6 +46,9 @@
 		const dataUrl = urlParams.get('load');
 		const dataName = urlParams.get('name') || 'default';
 		const dataColor = urlParams.get('color') || "rgb(230, 110, 76)";
+		const dataShape = urlParams.get('pointShape') || 'circle';
+		const dataSizeType = urlParams.get('pointSizeType') || 'adaptive';
+		
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		viewer.setDescription(`ShareLoc Demo`);
 		
@@ -65,8 +68,8 @@
 			viewer.scene.addPointCloud(pointcloud);
 			//material.pointColorType = Potree.PointColorType.ELEVATION; // any Potree.PointColorType.XXXX 
 			material.size = 1;
-			material.pointSizeType = Potree.PointSizeType.FIXED;
-			material.shape = Potree.PointShape.SQUARE;
+			material.pointSizeType = Potree.PointSizeType[dataSizeType.toUpperCase()];
+			material.shape = Potree.PointShape[dataShape.toUpperCase()];
 			material.opacity = 0.3;
 			// material.blending = THREE.AdditiveBlending;
 			// material.depthFunc = THREE.LessEqualDepth;
