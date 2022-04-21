@@ -12,7 +12,7 @@ LONG_DESCRIPTION = README_FILE.read_text(encoding="utf-8")
 VERSION_FILE = ROOT_DIR / "shareloc_utils" / "VERSION"
 VERSION = json.loads(VERSION_FILE.read_text())["version"]
 
-REQUIRES = []
+REQUIRES = ["numpy", "pyyaml", "pillow", "tqdm"]
 
 setup(
     name="shareloc-utils",
