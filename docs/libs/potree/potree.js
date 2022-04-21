@@ -419,7 +419,7 @@ Potree.loadPointCloud = function (path, name, callback) {
 				loaded(pointcloud);
 			}
 		});
-	} else if (path.indexOf('cloud.js') > 0) {
+	} else if (path.indexOf('cloud.js') > 0 || path.split('?')[0].endsWith('.zip')) {
 		Potree.POCLoader.load(path, function (geometry) {
 			if (!geometry) {
 				//callback({type: 'loading_failed'});
@@ -3920,110 +3920,132 @@ Potree.POCLoader = function () {
  * @param url
  * @param loadingFinishedListener executed after loading the binary has been finished
  */
-Potree.POCLoader.load = function load (url, callback) {
+Potree.POCLoader.load = async function load (url, callback) {
 	try {
 		let pco = new Potree.PointCloudOctreeGeometry();
 		pco.url = url;
-		let xhr = Potree.XHRFactory.createXMLHttpRequest();
-		xhr.open('GET', url, true);
 
-		xhr.onreadystatechange = function () {
-			if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 0)) {
-				let fMno = JSON.parse(xhr.responseText);
+		const parseHeaders = (fMno)=>{
+			let version = new Potree.Version(fMno.version);
 
-				let version = new Potree.Version(fMno.version);
-
-				// assume octreeDir is absolute if it starts with http
-				if (fMno.octreeDir.indexOf('http') === 0) {
-					pco.octreeDir = fMno.octreeDir;
-				} else {
-					pco.octreeDir = url + '/../' + fMno.octreeDir;
-				}
-
-				pco.spacing = fMno.spacing;
-				pco.hierarchyStepSize = fMno.hierarchyStepSize;
-
-				pco.pointAttributes = fMno.pointAttributes;
-
-				let min = new THREE.Vector3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
-				let max = new THREE.Vector3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
-				let boundingBox = new THREE.Box3(min, max);
-				let tightBoundingBox = boundingBox.clone();
-
-				if (fMno.tightBoundingBox) {
-					tightBoundingBox.min.copy(new THREE.Vector3(fMno.tightBoundingBox.lx, fMno.tightBoundingBox.ly, fMno.tightBoundingBox.lz));
-					tightBoundingBox.max.copy(new THREE.Vector3(fMno.tightBoundingBox.ux, fMno.tightBoundingBox.uy, fMno.tightBoundingBox.uz));
-				}
-
-				let offset = min.clone();
-
-				boundingBox.min.sub(offset);
-				boundingBox.max.sub(offset);
-
-				tightBoundingBox.min.sub(offset);
-				tightBoundingBox.max.sub(offset);
-
-				pco.projection = fMno.projection;
-				pco.boundingBox = boundingBox;
-				pco.tightBoundingBox = tightBoundingBox;
-				pco.boundingSphere = boundingBox.getBoundingSphere();
-				pco.tightBoundingSphere = tightBoundingBox.getBoundingSphere();
-				pco.offset = offset;
-				if (fMno.pointAttributes === 'LAS') {
-					pco.loader = new Potree.LasLazLoader(fMno.version);
-				} else if (fMno.pointAttributes === 'LAZ') {
-					pco.loader = new Potree.LasLazLoader(fMno.version);
-				} else {
-					pco.loader = new Potree.BinaryLoader(fMno.version, boundingBox, fMno.scale);
-					pco.pointAttributes = new Potree.PointAttributes(pco.pointAttributes);
-				}
-
-				let nodes = {};
-
-				{ // load root
-					let name = 'r';
-
-					let root = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
-					root.level = 0;
-					root.hasChildren = true;
-					root.spacing = pco.spacing;
-					if (version.upTo('1.5')) {
-						root.numPoints = fMno.hierarchy[0][1];
-					} else {
-						root.numPoints = 0;
-					}
-					pco.root = root;
-					pco.root.load();
-					nodes[name] = root;
-				}
-
-				// load remaining hierarchy
-				if (version.upTo('1.4')) {
-					for (let i = 1; i < fMno.hierarchy.length; i++) {
-						let name = fMno.hierarchy[i][0];
-						let numPoints = fMno.hierarchy[i][1];
-						let index = parseInt(name.charAt(name.length - 1));
-						let parentName = name.substring(0, name.length - 1);
-						let parentNode = nodes[parentName];
-						let level = name.length - 1;
-						let boundingBox = Potree.POCLoader.createChildAABB(parentNode.boundingBox, index);
-
-						let node = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
-						node.level = level;
-						node.numPoints = numPoints;
-						node.spacing = pco.spacing / Math.pow(2, level);
-						parentNode.addChild(node);
-						nodes[name] = node;
-					}
-				}
-
-				pco.nodes = nodes;
-
-				callback(pco);
+			// assume octreeDir is absolute if it starts with http
+			if (fMno.octreeDir.indexOf('http') === 0) {
+				pco.octreeDir = fMno.octreeDir;
+			} else {
+				pco.octreeDir = url + '/../' + fMno.octreeDir;
 			}
-		};
 
-		xhr.send(null);
+			pco.spacing = fMno.spacing;
+			pco.hierarchyStepSize = fMno.hierarchyStepSize;
+
+			pco.pointAttributes = fMno.pointAttributes;
+
+			let min = new THREE.Vector3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
+			let max = new THREE.Vector3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
+			let boundingBox = new THREE.Box3(min, max);
+			let tightBoundingBox = boundingBox.clone();
+
+			if (fMno.tightBoundingBox) {
+				tightBoundingBox.min.copy(new THREE.Vector3(fMno.tightBoundingBox.lx, fMno.tightBoundingBox.ly, fMno.tightBoundingBox.lz));
+				tightBoundingBox.max.copy(new THREE.Vector3(fMno.tightBoundingBox.ux, fMno.tightBoundingBox.uy, fMno.tightBoundingBox.uz));
+			}
+
+			let offset = min.clone();
+
+			boundingBox.min.sub(offset);
+			boundingBox.max.sub(offset);
+
+			tightBoundingBox.min.sub(offset);
+			tightBoundingBox.max.sub(offset);
+
+			pco.projection = fMno.projection;
+			pco.boundingBox = boundingBox;
+			pco.tightBoundingBox = tightBoundingBox;
+			pco.boundingSphere = boundingBox.getBoundingSphere();
+			pco.tightBoundingSphere = tightBoundingBox.getBoundingSphere();
+			pco.offset = offset;
+
+			if(fMno.entires){
+				pco.loader = new Potree.ZipLoader(fMno.version, boundingBox, fMno.scale, fMno.entires);
+				pco.pointAttributes = new Potree.PointAttributes(pco.pointAttributes);
+			} else if (fMno.pointAttributes === 'LAS') {
+				pco.loader = new Potree.LasLazLoader(fMno.version);
+			} else if (fMno.pointAttributes === 'LAZ') {
+				pco.loader = new Potree.LasLazLoader(fMno.version);
+			} else {
+				pco.loader = new Potree.BinaryLoader(fMno.version, boundingBox, fMno.scale);
+				pco.pointAttributes = new Potree.PointAttributes(pco.pointAttributes);
+			}
+
+			let nodes = {};
+
+			{ // load root
+				let name = 'r';
+
+				let root = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
+				root.level = 0;
+				root.hasChildren = true;
+				root.spacing = pco.spacing;
+				if (version.upTo('1.5')) {
+					root.numPoints = fMno.hierarchy[0][1];
+				} else {
+					root.numPoints = 0;
+				}
+				pco.root = root;
+				pco.root.load();
+				nodes[name] = root;
+			}
+
+			// load remaining hierarchy
+			if (version.upTo('1.4')) {
+				for (let i = 1; i < fMno.hierarchy.length; i++) {
+					let name = fMno.hierarchy[i][0];
+					let numPoints = fMno.hierarchy[i][1];
+					let index = parseInt(name.charAt(name.length - 1));
+					let parentName = name.substring(0, name.length - 1);
+					let parentNode = nodes[parentName];
+					let level = name.length - 1;
+					let boundingBox = Potree.POCLoader.createChildAABB(parentNode.boundingBox, index);
+
+					let node = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
+					node.level = level;
+					node.numPoints = numPoints;
+					node.spacing = pco.spacing / Math.pow(2, level);
+					parentNode.addChild(node);
+					nodes[name] = node;
+				}
+			}
+
+			pco.nodes = nodes;
+
+			callback(pco);
+		}
+
+		let rangeReader=new zip.HttpRangeReader(url, {forceRangeRequests:true,useXHR:true});
+		let zipReader=new zip.ZipReader(rangeReader);
+		const zipEntires = await zipReader.getEntries();
+		const entires = {}
+		for(let entry of zipEntires){
+			entires[entry.filename] = entry;
+		}
+		const headerEntry = entires['cloud.js']
+		const bytes = await headerEntry.getData(new zip.Uint8ArrayWriter())
+		const dec = new TextDecoder("utf-8");
+		const fMno = JSON.parse(dec.decode(bytes));
+		fMno.entires = entires;
+		parseHeaders(fMno);
+
+		// let xhr = Potree.XHRFactory.createXMLHttpRequest();
+		// xhr.open('GET', url, true);
+
+		// xhr.onreadystatechange = async function () {
+		// 	if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 0)) {
+		// 		let fMno = JSON.parse(xhr.responseText);
+		// 		parseHeaders(fMno);
+		// 	}
+		// };
+
+		// xhr.send(null);
 	} catch (e) {
 		console.log("loading failed: '" + url + "'");
 		console.log(e);
@@ -4270,7 +4292,6 @@ Potree.BinaryLoader = class BinaryLoader{
 		if (this.version.equalOrHigher('1.4')) {
 			url += '.bin';
 		}
-
 		let xhr = Potree.XHRFactory.createXMLHttpRequest();
 		xhr.open('GET', url, true);
 		xhr.responseType = 'arraybuffer';
@@ -4378,6 +4399,122 @@ Potree.BinaryLoader = class BinaryLoader{
 };
 
 
+
+Potree.ZipLoader = class ZipLoader{
+
+	constructor(version, boundingBox, scale, entires){
+		if (typeof (version) === 'string') {
+			this.version = new Potree.Version(version);
+		} else {
+			this.version = version;
+		}
+
+		this.boundingBox = boundingBox;
+		this.scale = scale;
+		this.entires = entires;
+	}
+
+	load(node){
+		if (node.loaded) {
+			return;
+		}
+		const filename = 'data/' + node.getHierarchyPath() + '/' + node.name + ".bin";
+		const entry = this.entires[filename]
+		entry.getData(new zip.Uint8ArrayWriter()).then((bytes)=>{
+			this.parse(node, bytes.buffer);
+		})
+	};
+
+	async loadHierachy(node){
+		const filename = 'data/' + node.getHierarchyPath() + '/' + node.name + '.hrc';
+		const entry = this.entires[filename]
+		const bytes = await entry.getData(new zip.Uint8ArrayWriter())
+		return bytes.buffer;
+	}
+
+	parse(node, buffer){
+		let pointAttributes = node.pcoGeometry.pointAttributes;
+		let numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
+
+		if (this.version.upTo('1.5')) {
+			node.numPoints = numPoints;
+		}
+
+		let workerPath = Potree.scriptPath + '/workers/BinaryDecoderWorker.js';
+		let worker = Potree.workerPool.getWorker(workerPath);
+
+		worker.onmessage = function (e) {
+
+			let data = e.data;
+			let buffers = data.attributeBuffers;
+			let tightBoundingBox = new THREE.Box3(
+				new THREE.Vector3().fromArray(data.tightBoundingBox.min),
+				new THREE.Vector3().fromArray(data.tightBoundingBox.max)
+			);
+
+			Potree.workerPool.returnWorker(workerPath, worker);
+
+			let geometry = new THREE.BufferGeometry();
+
+			for(let property in buffers){
+				let buffer = buffers[property].buffer;
+
+				if (parseInt(property) === Potree.PointAttributeNames.POSITION_CARTESIAN) {
+					geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+				} else if (parseInt(property) === Potree.PointAttributeNames.COLOR_PACKED) {
+					geometry.addAttribute('color', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+				} else if (parseInt(property) === Potree.PointAttributeNames.INTENSITY) {
+					geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(buffer), 1));
+				} else if (parseInt(property) === Potree.PointAttributeNames.CLASSIFICATION) {
+					geometry.addAttribute('classification', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
+				} else if (parseInt(property) === Potree.PointAttributeNames.NORMAL_SPHEREMAPPED) {
+					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+				} else if (parseInt(property) === Potree.PointAttributeNames.NORMAL_OCT16) {
+					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+				} else if (parseInt(property) === Potree.PointAttributeNames.NORMAL) {
+					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+				} else if (parseInt(property) === Potree.PointAttributeNames.INDICES) {
+					let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
+					bufferAttribute.normalized = true;
+					geometry.addAttribute('indices', bufferAttribute);
+				} else if (parseInt(property) === Potree.PointAttributeNames.SPACING) {
+					let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
+					geometry.addAttribute('spacing', bufferAttribute);
+				}
+			}
+
+
+			tightBoundingBox.max.sub(tightBoundingBox.min);
+			tightBoundingBox.min.set(0, 0, 0);
+
+			let numPoints = e.data.buffer.byteLength / pointAttributes.byteSize;
+			
+			node.numPoints = numPoints;
+			node.geometry = geometry;
+			node.mean = new THREE.Vector3(...data.mean);
+			node.tightBoundingBox = tightBoundingBox;
+			node.loaded = true;
+			node.loading = false;
+			node.estimatedSpacing = data.estimatedSpacing;
+			Potree.numNodesLoading--;
+		};
+
+		let message = {
+			buffer: buffer,
+			pointAttributes: pointAttributes,
+			version: this.version.version,
+			min: [ node.boundingBox.min.x, node.boundingBox.min.y, node.boundingBox.min.z ],
+			offset: [node.pcoGeometry.offset.x, node.pcoGeometry.offset.y, node.pcoGeometry.offset.z],
+			scale: this.scale,
+			spacing: node.spacing,
+			hasChildren: node.hasChildren,
+			name: node.name
+		};
+		worker.postMessage(message, [message.buffer]);
+	};
+
+	
+};
 
 
 
@@ -10811,28 +10948,38 @@ Potree.PointCloudOctreeGeometryNode = class PointCloudOctreeGeometryNode extends
 			node.loadPoints();
 		};
 		if ((node.level % node.pcoGeometry.hierarchyStepSize) === 0) {
-			// let hurl = node.pcoGeometry.octreeDir + "/../hierarchy/" + node.name + ".hrc";
-			let hurl = node.pcoGeometry.octreeDir + '/' + node.getHierarchyPath() + '/' + node.name + '.hrc';
-
-			let xhr = Potree.XHRFactory.createXMLHttpRequest();
-			xhr.open('GET', hurl, true);
-			xhr.responseType = 'arraybuffer';
-			xhr.overrideMimeType('text/plain; charset=x-user-defined');
-			xhr.onreadystatechange = () => {
-				if (xhr.readyState === 4) {
-					if (xhr.status === 200 || xhr.status === 0) {
-						let hbuffer = xhr.response;
+			if(this.pcoGeometry.loader.loadHierachy){
+				this.pcoGeometry.loader.loadHierachy(node).then((hbuffer)=>{
 						callback(node, hbuffer);
-					} else {
-						console.log('Failed to load file! HTTP status: ' + xhr.status + ', file: ' + hurl);
-						Potree.numNodesLoading--;
+				}).catch((error)=>{
+					console.log('Failed to load file! Error: ' + error + ', file: ' + hurl);
+					Potree.numNodesLoading--;
+				})
+			}
+			else{
+				// let hurl = node.pcoGeometry.octreeDir + "/../hierarchy/" + node.name + ".hrc";
+				let hurl = node.pcoGeometry.octreeDir + '/' + node.getHierarchyPath() + '/' + node.name + '.hrc';
+
+				let xhr = Potree.XHRFactory.createXMLHttpRequest();
+				xhr.open('GET', hurl, true);
+				xhr.responseType = 'arraybuffer';
+				xhr.overrideMimeType('text/plain; charset=x-user-defined');
+				xhr.onreadystatechange = () => {
+					if (xhr.readyState === 4) {
+						if (xhr.status === 200 || xhr.status === 0) {
+							let hbuffer = xhr.response;
+							callback(node, hbuffer);
+						} else {
+							console.log('Failed to load file! HTTP status: ' + xhr.status + ', file: ' + hurl);
+							Potree.numNodesLoading--;
+						}
 					}
+				};
+				try {
+					xhr.send(null);
+				} catch (e) {
+					console.log('fehler beim laden der punktwolke: ' + e);
 				}
-			};
-			try {
-				xhr.send(null);
-			} catch (e) {
-				console.log('fehler beim laden der punktwolke: ' + e);
 			}
 		}
 	}

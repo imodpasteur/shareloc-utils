@@ -2,7 +2,10 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.tmp.las
+*.tmp.txt
 
+point_clouds
 datasets
 # C extensions
 *.so
