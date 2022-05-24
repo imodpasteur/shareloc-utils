@@ -60,6 +60,7 @@
 		viewer.loadGUI(() => {
 			$("#menu_filters").next().show();
 			// viewer.toggleSidebar();
+			viewer.setTopView();
 		});
 
 		Potree.loadPointCloud(dataUrl, dataName, function(e){
