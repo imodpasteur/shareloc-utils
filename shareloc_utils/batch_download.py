@@ -57,7 +57,8 @@ def convert_potree(file_path, zip):
     manifest = read_smlm_file(file_path)
     tables = manifest["files"]
     table = tables[0]["data"]
-    xyz = np.stack([table["x"], table["y"], np.zeros_like(table["y"])], axis=1)
+    zz = table["z"] if "z" in table else np.zeros_like(table["y"])
+    xyz = np.stack([table["x"], table["y"], zz], axis=1)
     # dump data and convert
     np.savetxt(".tmp.txt", xyz)
     BIN = os.path.dirname(pypotree.__file__) + "/bin"
