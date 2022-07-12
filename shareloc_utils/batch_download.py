@@ -35,12 +35,15 @@ def resolve_url(rdf_url, path):
 def convert_smlm(file_path, delimiter=",", extension=".csv"):
     smlm_info = read_smlm_file(file_path)
     converted_files = []
+    table_count = len(smlm_info["files"])
     for tbi, file_info in enumerate(smlm_info["files"]):
         cols = file_info["cols"]
         rows = file_info["rows"]
         headers = file_info["headers"]
         table = file_info["data"]
-        fp = file_path.replace(".smlm", f".{tbi}{extension}")
+        fp = file_path.replace(
+            ".smlm", f".{tbi}{extension}" if table_count > 1 else extension
+        )
         with open(fp, "w") as f:
             for i in range(cols):
                 f.write(headers[i] + (delimiter if i < cols - 1 else "\n"))
@@ -60,6 +63,7 @@ def convert_potree(file_path, zip):
 
     manifest = read_smlm_file(file_path)
     tables = manifest["files"]
+    table_count = len(tables)
     converted_files = []
     for tbi, table in enumerate(tables):
         table = table["data"]
@@ -69,7 +73,9 @@ def convert_potree(file_path, zip):
         np.savetxt(".tmp.txt", xyz)
         BIN = os.path.dirname(pypotree.__file__) + "/bin"
 
-        name = os.path.basename(file_path.replace(".smlm", f".{tbi}"))
+        name = os.path.basename(
+            file_path.replace(".smlm", f".{tbi}" if table_count > 1 else "")
+        )
         output_dir = os.path.join(os.path.dirname(file_path), "potree")
         try:
             print(
@@ -83,7 +89,9 @@ def convert_potree(file_path, zip):
                 )
             )
             if zip:
-                zip_name = file_path.replace(".smlm", f".{tbi}.potree")
+                zip_name = file_path.replace(
+                    ".smlm", f".{tbi}.potree" if table_count > 1 else ".potree"
+                )
                 shutil.make_archive(
                     zip_name, "zip", os.path.join(output_dir, "pointclouds", name)
                 )
