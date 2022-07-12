@@ -34,12 +34,14 @@ def resolve_url(rdf_url, path):
 
 def convert_smlm(file_path, delimiter=",", extension=".csv"):
     smlm_info = read_smlm_file(file_path)
-    for file_info in smlm_info["files"]:
+    converted_files = []
+    for tbi, file_info in enumerate(smlm_info["files"]):
         cols = file_info["cols"]
         rows = file_info["rows"]
         headers = file_info["headers"]
         table = file_info["data"]
-        with open(file_path.replace(".smlm", extension), "w") as f:
+        fp = file_path.replace(".smlm", f".{tbi}{extension}")
+        with open(fp, "w") as f:
             for i in range(cols):
                 f.write(headers[i] + (delimiter if i < cols - 1 else "\n"))
             for i in tqdm(range(rows), total=rows):
@@ -48,6 +50,8 @@ def convert_smlm(file_path, delimiter=",", extension=".csv"):
                         f"{table[headers[j]][i]:.3f}"
                         + (delimiter if j < cols - 1 else "\n")
                     )
+        converted_files.append(fp)
+    return converted_files
 
 
 def convert_potree(file_path, zip):
@@ -56,36 +60,42 @@ def convert_potree(file_path, zip):
 
     manifest = read_smlm_file(file_path)
     tables = manifest["files"]
-    table = tables[0]["data"]
-    zz = table["z"] if "z" in table else np.zeros_like(table["y"])
-    xyz = np.stack([table["x"], table["y"], zz], axis=1)
-    # dump data and convert
-    np.savetxt(".tmp.txt", xyz)
-    BIN = os.path.dirname(pypotree.__file__) + "/bin"
+    converted_files = []
+    for tbi, table in enumerate(tables):
+        table = table["data"]
+        zz = table["z"] if "z" in table else np.zeros_like(table["y"])
+        xyz = np.stack([table["x"], table["y"], zz], axis=1)
+        # dump data and convert
+        np.savetxt(".tmp.txt", xyz)
+        BIN = os.path.dirname(pypotree.__file__) + "/bin"
 
-    name = os.path.basename(file_path.replace(".smlm", ""))
-    output_dir = os.path.join(os.path.dirname(file_path), "potree")
-    try:
-        print(
-            "{BIN}/PotreeConverter .tmp.txt -f xyz -o {output_dir} -p {idd} --material ELEVATION --overwrite".format(
-                BIN=BIN, output_dir=output_dir, idd=name
+        name = os.path.basename(file_path.replace(".smlm", f".{tbi}"))
+        output_dir = os.path.join(os.path.dirname(file_path), "potree")
+        try:
+            print(
+                "{BIN}/PotreeConverter .tmp.txt -f xyz -o {output_dir} -p {idd} --material ELEVATION --overwrite".format(
+                    BIN=BIN, output_dir=output_dir, idd=name
+                )
             )
-        )
-        os.system(
-            '{BIN}/PotreeConverter .tmp.txt -f xyz -o "{output_dir}" -p "{idd}" --material ELEVATION --overwrite'.format(
-                BIN=BIN, output_dir=output_dir, idd=name
+            os.system(
+                '{BIN}/PotreeConverter .tmp.txt -f xyz -o "{output_dir}" -p "{idd}" --material ELEVATION --overwrite'.format(
+                    BIN=BIN, output_dir=output_dir, idd=name
+                )
             )
-        )
-        if zip:
-            zip_name = file_path.replace(".smlm", ".potree")
-            shutil.make_archive(
-                zip_name, "zip", os.path.join(output_dir, "pointclouds", name)
-            )
-            shutil.rmtree(output_dir)
-    except Exception:
-        raise
-    finally:
-        os.remove(".tmp.txt")
+            if zip:
+                zip_name = file_path.replace(".smlm", f".{tbi}.potree")
+                shutil.make_archive(
+                    zip_name, "zip", os.path.join(output_dir, "pointclouds", name)
+                )
+                shutil.rmtree(output_dir)
+                converted_files.append(zip_name + ".zip")
+            else:
+                converted_files.append(output_dir)
+        except Exception:
+            raise
+        finally:
+            os.remove(".tmp.txt")
+    return converted_files
 
 
 def download(
