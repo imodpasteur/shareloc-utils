@@ -12,7 +12,7 @@ import shutil
 
 from tqdm import tqdm
 from shareloc_utils.smlm_file import read_smlm_file
-
+from shareloc_utils.formats import supported_text_formats
 
 class DownloadProgressBar(tqdm):
     def update_to(self, b=1, bsize=1, tsize=None):
@@ -32,10 +32,15 @@ def resolve_url(rdf_url, path):
     return urljoin(os.path.dirname(rdf_url) + "/", path)
 
 
-def convert_smlm(file_path, delimiter=",", extension=".csv"):
+def convert_smlm(file_path, delimiter=",", extension=".csv", format="ThunderSTORM (csv)"):
     smlm_info = read_smlm_file(file_path)
     converted_files = []
     table_count = len(smlm_info["files"])
+    format_config = supported_text_formats[format];
+    header_transform = {}
+    for k, v in format_config["header_transform"].items():
+        header_transform[v]=k
+
     for tbi, file_info in enumerate(smlm_info["files"]):
         cols = file_info["cols"]
         rows = file_info["rows"]
@@ -46,7 +51,7 @@ def convert_smlm(file_path, delimiter=",", extension=".csv"):
         )
         with open(fp, "w") as f:
             for i in range(cols):
-                f.write(headers[i] + (delimiter if i < cols - 1 else "\n"))
+                f.write((header_transform.get(headers[i], headers[i])) + (delimiter if i < cols - 1 else "\n"))
             for i in tqdm(range(rows), total=rows):
                 for j in range(cols):
                     f.write(
