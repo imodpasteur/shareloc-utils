@@ -6,7 +6,7 @@ import os
 import yaml
 import fnmatch
 import urllib.request
-from urllib.parse import urljoin
+from urllib.parse import urljoin, quote
 import tempfile
 import shutil
 
@@ -170,7 +170,7 @@ def download(
                         if name:
                             # download the file
                             download_url(
-                                resolve_url(rdf_url, sample["name"] + "/" + name),
+                                resolve_url(rdf_url, quote(sample["name"]) + "/" + quote(name)),
                                 file_path,
                             )
 
@@ -186,7 +186,7 @@ def download(
                     ):
                         # download the file
                         download_url(
-                            resolve_url(rdf_url, sample["name"] + "/" + file["name"]),
+                            resolve_url(rdf_url, quote(sample["name"]) + "/" + quote(file["name"])),
                             file_path,
                         )
                         # optionally, convert .smlm file to text file
