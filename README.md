@@ -1,6 +1,6 @@
 # ShareLoc Utilities
 
-Utility tools in Python for shareLoc.xyz
+Utility tools in Python for ShareLoc.xyz
 
 ## Features
  - Batch downloading datasets from the https://shareloc.xyz website
@@ -21,10 +21,9 @@ pip install -U shareloc-utils[potree]
 ## Usage for batch downloading
 
 The easiest way to download a single dataset is to go to https://shareloc.xyz and click the download icon (downward arrow) on the dataset card.
-
 You will then get a generated command which you can use for downloading the dataset.
 
-If you want to know how the generated commands works, here we will give a few examples.
+Here are a few examples to show how the generated commands work.
 
 Basically, you can pass dataset URLs directly to the command line like this:
 ```
@@ -46,15 +45,15 @@ python -m shareloc_utils.batch_download --help
 
 ### Bookmarking multiple datasets for download 
 
-The shareLoc.xyz website supports bookmarks, which allow you to mark multiple datasets and download them all at the same time (similar to a shopping cart).
+The shareloc.xyz website supports bookmarks, which allow you to mark multiple datasets and download them all at the same time (similar to a shopping cart).
 
-To use this feature, you move your mouse on top of the dataset card you are interested in, then click the bookmark icon to mark it. Repeat the process and mark all the datasets you want to download. Then click the bookmark icon in the navigation bar and click "Download All".
+To use this feature, move your mouse on top of a dataset card, then click the bookmark icon. Repeat this to mark all the datasets you want to download. Then click the bookmark icon that should be visible in the navigation bar (to the left of "+ Upload") and click "Download All".
 
 ## Use the SMLM file parser
 
-In Python, you use the `read_smlm_file` function to parse the *.smlm file downloaded from ShareLoc(https://shareloc.xyz).
+Use the Python function `read_smlm_file`  to parse the *.smlm file downloaded from ShareLoc(https://shareloc.xyz).
 
-In the following example, we first parse the tables in the smlm file, then generate a histogram image:
+In the following example, we first parse the localization tables in the smlm file, then generate a 2D histogram image:
 ```python
 from PIL import Image
 from shareloc_utils.smlm_file import read_smlm_file, plot_histogram
@@ -81,9 +80,9 @@ im.save("output.png")
   ```
 
   This will install all requirements.
-It will also install this package in development mode, so that code changes are applied immediately without reinstall necessary.
+It will also install this package in development mode, so that code changes are applied immediately without requiring a reinstall.
 
-- Here's a list of development tools we use.
+- Here is a list of development tools we use.
   - [black](https://pypi.org/project/black/)
   - [flake8](https://pypi.org/project/flake8/)
   - [mypy](https://pypi.org/project/mypy/)
@@ -91,7 +90,8 @@ It will also install this package in development mode, so that code changes are 
   - [pylint](https://pypi.org/project/pylint/)
   - [pytest](https://pypi.org/project/pytest/)
   - [tox](https://pypi.org/project/tox/)
-- It's recommended to use the corresponding code formatter and linters also in your code editor to get instant feedback. A popular editor that can do this is [`vscode`](https://code.visualstudio.com/).
+  
+- We recommended to use the corresponding code formatter and linters also in your code editor to get instant feedback. A popular editor for this is [`vscode`](https://code.visualstudio.com/).
 - Run all tests, check formatting and linting.
 
   ```sh
@@ -122,4 +122,4 @@ It will also install this package in development mode, so that code changes are 
   pytest --cov-report term-missing --cov=shareloc_utils
   ```
 
-- Continuous integration is by default supported via [GitHub actions](https://help.github.com/en/actions). GitHub actions is free for public repositories and comes with 2000 free Ubuntu build minutes per month for private repositories.
+- Continuous integration is supported by default via [GitHub actions](https://help.github.com/en/actions). GitHub actions are free for public repositories and come with 2000 free Ubuntu build minutes per month for private repositories.
