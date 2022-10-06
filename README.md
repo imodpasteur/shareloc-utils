@@ -1,9 +1,9 @@
 # ShareLoc Utilities
 
-Utility tools for ShareLoc.XYZ in Python
+Utility tools in Python for shareLoc.xyz
 
 ## Features
- - Batch Downloading datasets from https://shareloc.xyz website
+ - Batch downloading datasets from the https://shareloc.xyz website
  - Parser for *.smlm files
 
 
@@ -20,35 +20,35 @@ pip install -U shareloc-utils[potree]
 
 ## Usage for batch downloading
 
-The easiest way to download the dataset is to go to https://shareloc.xyz and click the download icon on the dataset.
+The easiest way to download a single dataset is to go to https://shareloc.xyz and click the download icon (downward arrow) on the dataset card.
 
 You will then get a generated command which you can use for downloading the dataset.
 
 If you want to know how the generated commands works, here we will give a few examples.
 
-Basically, you can pass datasets url directly to the command line like this:
+Basically, you can pass dataset URLs directly to the command line like this:
 ```
 python -m shareloc_utils.batch_download --datasets=https://sandbox.zenodo.org/record/891810 --output_dir=./output
 ```
 
-If you want to download multiple datasets, use comma to separate multiple dataset URL or just Zenodo IDs.
+If you want to download multiple datasets, use commas to separate their URLs or Zenodo IDs. For example:
 ```
 python -m shareloc_utils.batch_download --datasets=891810,887832 --sandbox --output_dir=./output
 ```
-Note that when you use Zenodo ID, you will need an additional parameter `--sandbox` if you are using the sandbox server. 
+Note that if you are using the sandbox server and you use Zenodo IDs, you will need an additional `--sandbox` parameter. 
 
-If you want to convert the downloaded dataset to text file format (e.g. CSV), you can add ` --conversion` after the command. If you want to generate a potree octree for visualization, set `--extension=".potree"` (a potree folder) or `--extension=".potree.zip"` (a zipped potree file). 
+If you want to convert the downloaded dataset to text file format (e.g. CSV), you can add ` --conversion` after the command. If you want to generate a potree octree for visualization, use `--extension=".potree"` (a potree folder) or `--extension=".potree.zip"` (a zipped potree file). 
 
 To print all other options, type: 
 ```
 python -m shareloc_utils.batch_download --help
 ```
 
-### Downloading multiple datasets
+### Bookmarking multiple datasets for download 
 
-The ShareLoc.XYZ website support bookmark feature (similar to a shopping cart) which you can mark multiple datasets and download them all.
+The shareLoc.xyz website supports bookmarks, which allow you to mark multiple datasets and download them all at the same time (similar to a shopping cart).
 
-To use it, you move your mouse on top of the dataset card you are interested in, then click the bookmark icon to mark it. Repeat the process and mark all the datasets you want to download. Then click the bookmark icon in the navigation bar and click "Download All".
+To use this feature, you move your mouse on top of the dataset card you are interested in, then click the bookmark icon to mark it. Repeat the process and mark all the datasets you want to download. Then click the bookmark icon in the navigation bar and click "Download All".
 
 ## Use the SMLM file parser
 
